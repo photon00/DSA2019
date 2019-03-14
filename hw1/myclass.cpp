@@ -19,15 +19,13 @@ void swap(heap_node &a, heap_node &b){
 			Class node
 ***************************************/
 node::node(){
-	_value = 0;
-	pre_node = NULL;
+	value = 0;
 	nxt_node = NULL;
 	p2heap_node = NULL;
 }
 
-node::node(int value){
-	_value = value;
-	pre_node = NULL;
+node::node(int v){
+	value = v;
 	nxt_node = NULL;
 	p2heap_node = NULL;
 }
@@ -61,7 +59,6 @@ node *queue::enqueue(int value){
 	else {
 		node *p_tail = _tail;
 		p_tail->nxt_node = p_new;
-		p_new->pre_node = p_tail;
 		_tail = p_new;
 	}
 	_size++;
@@ -90,7 +87,7 @@ void queue::show(){
 	node *tmp = _head;
 	printf("queue contain values:");
 	for (int i=0; i<_size; ++i){
-		printf(" %d", tmp->get_value());
+		printf(" %d", tmp->p2heap_node->value);
 		tmp = tmp->nxt_node;
 	}puts("");
 }
@@ -146,29 +143,34 @@ void maxHeap::maxHeapify(int idx){
 //		right child => 2*idx+2   //
 //		parent => (idx-1)>>1     //
 ///////////////////////////////////
-	if (2*idx+2 < _size){
-		if (_root[idx].value < _root[2*idx+1].value && 
-				_root[2*idx+1].value >= _root[2*idx+2].value){
-			swap(_root[2*idx+1], _root[idx]);
-			maxHeapify(2*idx+1);
+	int tmp = idx;
+	while (true){
+		if (2*tmp+2 < _size){
+			if (_root[tmp].value < _root[2*tmp+1].value && 
+					_root[2*tmp+1].value >= _root[2*tmp+2].value){
+				swap(_root[2*tmp+1], _root[tmp]);
+				tmp = 2*tmp+1;
+			}
+			else if (_root[tmp].value < _root[2*tmp+2].value && 
+					_root[2*tmp+1].value <= _root[2*tmp+2].value){
+				swap(_root[2*tmp+2], _root[tmp]);
+				tmp = 2*tmp+2;
+			}
+			else break;
 		}
-		else if (_root[idx].value < _root[2*idx+2].value && 
-				_root[2*idx+1].value <= _root[2*idx+2].value){
-			swap(_root[2*idx+2], _root[idx]);
-			maxHeapify(2*idx+2);
+		else if (2*tmp+1 < _size){
+			if (_root[tmp].value < _root[2*tmp+1].value){
+				swap(_root[2*tmp+1], _root[tmp]);
+				tmp = 2*tmp+1;
+			}
+			else break;
 		}
+		else break;
 	}
-	else if (2*idx+1 < _size){
-		if (_root[idx].value < _root[2*idx+1].value){
-			swap(_root[2*idx+1], _root[idx]);
-			maxHeapify(2*idx+1);
-		}
-	}
-	else return;
 }
 
 void maxHeap::insert(node *new_node){
-	_root[_size].value = new_node->get_value();  // assign value to heap node
+	_root[_size].value = new_node->value;  // assign value to heap node
 	_root[_size].p2node = new_node;
 	new_node->p2heap_node = &_root[_size++];
 	int tmp = _size - 1;
@@ -184,6 +186,23 @@ void maxHeap::insert(node *new_node){
 heap_node *maxHeap::erase(int idx){
 	increase(idx, INT_MAX);
 	return extract_max();
+}
+
+void maxHeap::exchange(int idx, node *new_node){
+	_root[idx].value = new_node->value;
+	_root[idx].p2node = new_node;
+	new_node->p2heap_node = &_root[idx];
+	if (idx > 0 && _root[idx].value > _root[(idx-1)>>1].value){
+		int tmp = idx;
+		while (tmp > 0){
+			if (_root[(tmp-1)>>1].value >= _root[tmp].value) break;
+			else {
+				swap(_root[(tmp-1)>>1], _root[tmp]);
+				tmp = (tmp-1) >> 1;
+			}
+		}
+	}
+	else maxHeapify(idx);
 }
 
 void maxHeap::show(){
@@ -258,29 +277,34 @@ void minHeap::minHeapify(int idx){
 //		right child => 2*idx+2   //
 //		parent => (idx-1)>>1     //
 ///////////////////////////////////
-	if (2*idx+2 < _size){
-		if (_root[idx].value > _root[2*idx+1].value && 
-				_root[2*idx+1].value <= _root[2*idx+2].value){
-			swap(_root[2*idx+1], _root[idx]);
-			minHeapify(2*idx+1);
+	int tmp = idx;
+	while (true){
+		if (2*tmp+2 < _size){
+			if (_root[tmp].value > _root[2*tmp+1].value && 
+					_root[2*tmp+1].value <= _root[2*tmp+2].value){
+				swap(_root[2*tmp+1], _root[tmp]);
+				tmp = 2*tmp+1;
+			}
+			else if (_root[tmp].value > _root[2*tmp+2].value && 
+					_root[2*tmp+1].value >= _root[2*tmp+2].value){
+				swap(_root[2*tmp+2], _root[tmp]);
+				tmp = 2*tmp+2;
+			}
+			else break;
 		}
-		else if (_root[idx].value > _root[2*idx+2].value && 
-				_root[2*idx+1].value >= _root[2*idx+2].value){
-			swap(_root[2*idx+2], _root[idx]);
-			minHeapify(2*idx+2);
+		else if (2*tmp+1 < _size){
+			if (_root[tmp].value > _root[2*tmp+1].value){
+				swap(_root[2*tmp+1], _root[tmp]);
+				tmp = 2*tmp+1;
+			}
+			else break;
 		}
+		else break;
 	}
-	else if (2*idx+1 < _size){
-		if (_root[idx].value > _root[2*idx+1].value){
-			swap(_root[2*idx+1], _root[idx]);
-			minHeapify(2*idx+1);
-		}
-	}
-	else return;
 }
 
 void minHeap::insert(node *new_node){
-	_root[_size].value = new_node->get_value();  // assign value to heap node
+	_root[_size].value = new_node->value;  // assign value to heap node
 	_root[_size].p2node = new_node;
 	new_node->p2heap_node = &_root[_size++];
 	int tmp = _size - 1;
@@ -296,6 +320,23 @@ void minHeap::insert(node *new_node){
 heap_node *minHeap::erase(int idx){
 	decrease(idx, -1);
 	return extract_min();
+}
+
+void minHeap::exchange(int idx, node *new_node){
+	_root[idx].value = new_node->value;
+	_root[idx].p2node = new_node;
+	new_node->p2heap_node = &_root[idx];
+	if (idx > 0 && _root[idx].value < _root[(idx-1)>>1].value){
+		int tmp = idx;
+		while (tmp > 0){
+			if (_root[(tmp-1)>>1].value <= _root[tmp].value) break;
+			else {
+				swap(_root[(tmp-1)>>1], _root[tmp]);
+				tmp = (tmp-1) >> 1;
+			}
+		}
+	}
+	else minHeapify(idx);
 }
 
 void minHeap::show(){
@@ -353,7 +394,7 @@ heap_node *minHeap::extract_min(){
 			Class hybrid
 ***************************************/
 hybrid::hybrid(int k, int M){
-	_head = new heap_node[M+1];
+	_head = new heap_node[M];
 	_k = k;
 	_M = M;
 	_size = 0;
@@ -382,53 +423,29 @@ void hybrid::append(int value){
 void hybrid::slide(int value){
 	heap_node *pop_hp = _queue.getHead()->p2heap_node;
 	int idx = pop_hp - _head;
-	if (idx < _k) _p_maxHeap->erase(idx);
-	else _p_minHeap->erase(idx-_k);
-	_queue.dequeue();
-
 	node *new_node = _queue.enqueue(value);
-	int size_maxHeap = _p_maxHeap->get_size();
-	int size_minHeap = _p_minHeap->get_size();
-	if (size_maxHeap == 0 || size_minHeap == 0){
-		if (!size_maxHeap && !size_minHeap){
-			_p_maxHeap->insert(new_node);
+	if (idx < _k) {
+		_p_maxHeap->exchange(idx, new_node);
+		if (_p_minHeap->get_size() && _p_maxHeap->getMax() > _p_minHeap->getMin()){
+			swap(_head[0], _head[_k]);
+			_p_minHeap->minHeapify(0);
 		}
-		else if (!size_maxHeap){
-			if (value > _p_minHeap->getMin()){
-				if (size_minHeap == _M-_k+1) mov2max();
-				_p_minHeap->insert(new_node);
-			}
-			else _p_maxHeap->insert(new_node);
-		}
-		else {
-			if (value < _p_maxHeap->getMax()){
-				if (size_maxHeap == _k) mov2min();
-				_p_maxHeap->insert(new_node);
-			}
-			else _p_minHeap->insert(new_node);
-		}
-	}
-	else if (value >= _p_maxHeap->getMax() && value <= _p_minHeap->getMin()){
-		if (size_maxHeap < _k)
-			_p_maxHeap->insert(new_node);
-		else _p_minHeap->insert(new_node);
-	}
-	else if (value < _p_maxHeap->getMax()){
-		if (size_maxHeap == _k) mov2min();
-		_p_maxHeap->insert(new_node);
 	}
 	else {
-		if (size_minHeap == _M-_k+1) mov2max();
-		_p_minHeap->insert(new_node);
+		_p_minHeap->exchange(idx-_k, new_node);
+		if (_p_maxHeap->getMax() > _p_minHeap->getMin()){
+			swap(_head[0], _head[_k]);
+			_p_maxHeap->maxHeapify(0);
+		}	
 	}
+	_queue.dequeue();
 }
 
 int hybrid::get_kth(){
 	if (_p_maxHeap == NULL || _p_minHeap == NULL)
 		make_heap();
 	//heapSummary();
-	if (_p_maxHeap->get_size() == _k) return _head[0].value;
-	else return _head[_k].value;
+	return _head[0].value;
 }
 
 void hybrid::show(){
@@ -438,7 +455,7 @@ void hybrid::show(){
 	for (int i=0; i<_k; ++i)
 		printf(" %d", _head[i].value);
 	printf("\t|\t");
-	for (int i=_k; i<_M+1; ++i)
+	for (int i=_k; i<_M; ++i)
 		printf(" %d", _head[i].value);
 	puts("");
 }
@@ -529,3 +546,63 @@ void hybrid::mov2min(){
 	heap_node *tmp = _p_maxHeap->extract_max();
 	_p_minHeap->insert(tmp->p2node);
 }
+
+
+/***********************************
+ 			Class MyInput
+************************************/
+myInput::myInput(int buf_max_size){
+	_buf_size = 0;	
+	_current_idx = 0;
+	_buf_max_size = (size_t)buf_max_size;
+	_buf = new char[buf_max_size];
+	_tmp = new char[11];
+	_tmp_size = 0;
+}
+
+myInput::~myInput(){
+	delete [] _buf;
+	delete [] _tmp;
+}
+
+void myInput::read_from_input(){
+	if (_current_idx != 0 && isdigit(_buf[_buf_size-1])){
+		int count = 0, idx = _buf_size - 1;
+		while(isdigit(_buf[idx])){
+			++count;
+			--idx;
+		}
+		strncpy(_tmp, _buf+idx+1, count);
+		_tmp_size = count;
+	}
+	_buf_size = read(0, _buf, _buf_max_size);
+	_current_idx = 0;
+	if (_buf_size <= 0){
+		fprintf(stderr, "input ERROR!\n");
+		exit(-1);
+	}
+}
+
+myInput & myInput::operator>>(int &num){
+	// TODO continuing from input
+	while (isspace(_buf[_current_idx]) && _current_idx < _buf_size) ++_current_idx;
+	if (_current_idx >= (size_t)_buf_size) read_from_input();
+	size_t start_idx = _current_idx;
+	while (isdigit(_buf[_current_idx])){ ++_current_idx; }
+	if (_current_idx == _buf_size) {
+		read_from_input();
+	}
+	if (_tmp_size != 0){
+		while (!isspace(_buf[_current_idx])){ ++_current_idx; }
+		strncpy(_tmp+_tmp_size, _buf, _current_idx);
+		_tmp[_tmp_size+(_current_idx++)] = '\0';
+		num = std::atoi(_tmp);
+		_tmp_size = 0;
+	}
+	else {
+		_buf[_current_idx++] = '\0';
+		num = std::atoi(_buf+start_idx);
+	}
+	return *this;
+}
+

@@ -3,6 +3,9 @@
 #include <climits>
 #include <cstdlib>
 #include <ctime>
+#include <unistd.h>
+#include <cctype>
+#include <cstring>
 
 class heap_node;
 
@@ -11,15 +14,11 @@ class node {
 public:
 	node();
 	node(int value);
-	int get_value(){ return _value; };
-	void set_value(int value){ _value = value; }
 
-	node *pre_node;
 	node *nxt_node;
 	heap_node *p2heap_node;
 
-private:
-	int _value;
+	int value;
 };
 
 
@@ -59,6 +58,7 @@ public:
 	void maxHeapify(int idx);
 	void insert(node *new_node);
 	heap_node *erase(int idx);
+	void exchange(int idx, node *new_node);
 
 	void show();
 	int check();
@@ -81,6 +81,7 @@ public:
 	void minHeapify(int idx);
 	void insert(node *new_node);
 	heap_node *erase(int idx);
+	void exchange(int idx, node *new_node);
 
 	void show();
 	int check();
@@ -118,4 +119,20 @@ private:
 	heap_node* 		_head;
 	maxHeap*		_p_maxHeap;
 	minHeap*		_p_minHeap;
+};
+
+class myInput{
+public:
+	myInput(int buf_max_size);
+	~myInput();
+	myInput & operator>>(int &num);
+private:
+	void read_from_input();
+
+	char 	*_buf;
+	char	*_tmp;
+	int 	_tmp_size;
+	size_t 	_current_idx;
+	size_t 	_buf_max_size;
+	ssize_t _buf_size;
 };
