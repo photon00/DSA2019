@@ -2,10 +2,6 @@
 #include <cstdio>
 #include <climits>
 #include <cstdlib>
-#include <ctime>
-#include <unistd.h>
-#include <cctype>
-#include <cstring>
 
 class heap_node;
 
@@ -36,7 +32,6 @@ public:
 	void show();
 	int check_heap();
 
-private:
 	unsigned int _size;
 	node *_head;
 	node *_tail;
@@ -66,8 +61,6 @@ public:
 	heap_node *extract_max();
 	void increase(int idx, int new_value);
 
-private:
-
 	unsigned int _size;
 	heap_node *_root;
 };
@@ -89,7 +82,6 @@ public:
 	void decrease(int idx, int new_value);
 	heap_node *extract_min();
 
-private:
 	unsigned int _size;
 	heap_node *_root;
 };
@@ -121,18 +113,3 @@ private:
 	minHeap*		_p_minHeap;
 };
 
-class myInput{
-public:
-	myInput(int buf_max_size);
-	~myInput();
-	myInput & operator>>(int &num);
-private:
-	void read_from_input();
-
-	char 	*_buf;
-	char	*_tmp;
-	int 	_tmp_size;
-	size_t 	_current_idx;
-	size_t 	_buf_max_size;
-	ssize_t _buf_size;
-};

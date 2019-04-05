@@ -2,10 +2,6 @@
 #include <cstdio>
 #include <climits>
 #include <cstdlib>
-#include <ctime>
-#include <unistd.h>
-#include <cctype>
-#include <cstring>
 
 class heap_node;
 
@@ -36,7 +32,6 @@ public:
 	void show();
 	int check_heap();
 
-private:
 	unsigned int _size;
 	node *_head;
 	node *_tail;
@@ -66,8 +61,6 @@ public:
 	heap_node *extract_max();
 	void increase(int idx, int new_value);
 
-private:
-
 	unsigned int _size;
 	heap_node *_root;
 };
@@ -89,7 +82,6 @@ public:
 	void decrease(int idx, int new_value);
 	heap_node *extract_min();
 
-private:
 	unsigned int _size;
 	heap_node *_root;
 };
@@ -121,21 +113,6 @@ private:
 	minHeap*		_p_minHeap;
 };
 
-class myInput{
-public:
-	myInput(int buf_max_size);
-	~myInput();
-	myInput & operator>>(int &num);
-private:
-	void read_from_input();
-
-	char 	*_buf;
-	char	*_tmp;
-	int 	_tmp_size;
-	size_t 	_current_idx;
-	size_t 	_buf_max_size;
-	ssize_t _buf_size;
-};
 
 void swap(heap_node &a, heap_node &b){
 	int tmp = a.value;
@@ -194,8 +171,7 @@ node *queue::enqueue(int value){
 		_tail = p_new;
 	}
 	else {
-		node *p_tail = _tail;
-		p_tail->nxt_node = p_new;
+		_tail->nxt_node = p_new;
 		_tail = p_new;
 	}
 	_size++;
@@ -203,12 +179,12 @@ node *queue::enqueue(int value){
 }
 
 void queue::dequeue(){
-	if (_size > 1){
+	//if (_size > 1){
 		node *new_head = _head->nxt_node;
 		delete _head;
 		_head = new_head;
 		_size--;
-	}
+	/*}
 	else if (_size == 1){
 		delete _head;
 		_head = _tail = NULL;
@@ -217,7 +193,7 @@ void queue::dequeue(){
 	else {
 		std::cerr << "The queue is already empty!" << std::endl;
 		exit(-1);
-	}
+	}*/
 }
 
 void queue::show(){
@@ -541,16 +517,13 @@ hybrid::hybrid(int k, int M){
 
 hybrid::~hybrid(){
 	delete [] _head;
-	if (_p_maxHeap != NULL) delete _p_maxHeap;
-	if (_p_minHeap != NULL) delete _p_minHeap;
-	//_queue.~queue();
 }
 
 void hybrid::append(int value){
-	if (_size >= _M){
+	/*if (_size >= _M){
 		std::cerr << "The container is already full, you should call slide()" << std::endl;
 		exit(-1);
-	}
+	}*/
 	node *new_node = _queue.enqueue(value);
 	_head[_size].value = value;
 	_head[_size].p2node = new_node;
@@ -558,19 +531,19 @@ void hybrid::append(int value){
 }
 
 void hybrid::slide(int value){
-	heap_node *pop_hp = _queue.getHead()->p2heap_node;
+	heap_node *pop_hp = _queue._head->p2heap_node;
 	int idx = pop_hp - _head;
 	node *new_node = _queue.enqueue(value);
 	if (idx < _k) {
 		_p_maxHeap->exchange(idx, new_node);
-		if (_p_minHeap->get_size() && _p_maxHeap->getMax() > _p_minHeap->getMin()){
+		if (_p_minHeap->_size && _head[0].value > _head[_k].value){
 			swap(_head[0], _head[_k]);
 			_p_minHeap->minHeapify(0);
 		}
 	}
 	else {
 		_p_minHeap->exchange(idx-_k, new_node);
-		if (_p_maxHeap->getMax() > _p_minHeap->getMin()){
+		if (_head[0].value > _head[_k].value){
 			swap(_head[0], _head[_k]);
 			_p_maxHeap->maxHeapify(0);
 		}	
@@ -660,10 +633,10 @@ int hybrid::check(){
 }
 
 void hybrid::make_heap(){
-	if (_size < _M){
+	/*if (_size < _M){
 		std::cerr << "You should append more elements(" << _size << '/' << _M << ')' << std::endl;
 		exit(-1);
-	}
+	}*/
 	//show();
 	quickselect(_k, _head, _size);
 	//checkquickselect();
@@ -685,72 +658,12 @@ void hybrid::mov2min(){
 }
 
 
-/***********************************
- 			Class MyInput
-************************************/
-myInput::myInput(int buf_max_size){
-	_buf_size = 0;	
-	_current_idx = 0;
-	_buf_max_size = (size_t)buf_max_size;
-	_buf = new char[buf_max_size];
-	_tmp = new char[11];
-	_tmp_size = 0;
-}
-
-myInput::~myInput(){
-	delete [] _buf;
-	delete [] _tmp;
-}
-
-void myInput::read_from_input(){
-	if (_current_idx != 0 && isdigit(_buf[_buf_size-1])){
-		int count = 0, idx = _buf_size - 1;
-		while(isdigit(_buf[idx])){
-			++count;
-			--idx;
-		}
-		strncpy(_tmp, _buf+idx+1, count);
-		_tmp_size = count;
-	}
-	_buf_size = read(0, _buf, _buf_max_size);
-	_current_idx = 0;
-	if (_buf_size <= 0){
-		fprintf(stderr, "input ERROR!\n");
-		exit(-1);
-	}
-}
-
-myInput & myInput::operator>>(int &num){
-	// TODO continuing from input
-	while (isspace(_buf[_current_idx]) && _current_idx < _buf_size) ++_current_idx;
-	if (_current_idx >= (size_t)_buf_size) read_from_input();
-	size_t start_idx = _current_idx;
-	while (isdigit(_buf[_current_idx])){ ++_current_idx; }
-	if (_current_idx == _buf_size) {
-		read_from_input();
-	}
-	if (_tmp_size != 0){
-		while (!isspace(_buf[_current_idx])){ ++_current_idx; }
-		strncpy(_tmp+_tmp_size, _buf, _current_idx);
-		_tmp[_tmp_size+(_current_idx++)] = '\0';
-		num = std::atoi(_tmp);
-		_tmp_size = 0;
-	}
-	else {
-		_buf[_current_idx++] = '\0';
-		num = std::atoi(_buf+start_idx);
-	}
-	return *this;
-}
-
-
 int main(){
 	using namespace std;
 	ios_base::sync_with_stdio(false);
 	cin.tie(0);
 
 	int n, m, k;
-	myInput myI(1024);
 	cin >> n >> m >> k;
 	hybrid myHybrid(k, m);
 	int num;
