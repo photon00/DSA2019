@@ -6,6 +6,7 @@
 Node::Node(){
     _c = 'R';
     _level = 0;
+    _index = 1;
     _children.assign(26, NULL);
     _children_stack.reserve(16);
 }
@@ -57,6 +58,7 @@ void Node::showAncestors(){
 Container::Container(int n){
     _indexes.reserve(n);
     _indexes.push_back(new Node);
+    _num_node = 1;
 }
 
 Container::~Container(){
@@ -71,11 +73,18 @@ void Container::insert(int idx, char c){
     }
     else {
         _indexes.push_back(new Node(c, parent_node));
+        _indexes[_indexes.size()-1]->_index = ++_num_node;
     }
 }
 
 void Container::init(){
     dfs(_indexes[0]);
+    _DParray.reserve(_num_node);
+    for (int i=0; i<_num_node; ++i){
+        std::vector<int> tmp;
+        tmp.assign(_num_node, 0);
+        _DParray.push_back(tmp);
+    }
 }
 
 int Container::getLCP(int i, int j){
@@ -89,11 +98,25 @@ int Container::getLCP(int i, int j){
             it = std::min((int)nodeB->_ancestors.size(), it);
         }
     }
+    std::vector< std::tuple<int, int> > stack;
     it = nodeA->_ancestors.size()-1;
     for (; it>=0; --it){
+        if (nodeA->_index > nodeB->_index) std::swap(nodeA, nodeB);
         if (nodeA->_ancestors[it] != nodeB->_ancestors[it]){
-            nodeA = nodeA->_ancestors[it], nodeB = nodeB->_ancestors[it];
-            it = std::min((int)nodeB->_ancestors.size(), it);
+            if (_DParray[nodeA->_index][nodeB->_index] != 0) {
+                int return_value = _DParray[nodeA->_index][nodeB->_index];
+                while (!stack.empty()){
+                    auto tmp = stack.back();
+                    _DParray[std::get<0>(tmp)][std::get<1>(tmp)] = return_value;
+                    _DParray.pop_back();
+                }
+                return return_value;
+            }
+            else {
+                stack.push_back(std::make_tuple(nodeA->_index, nodeB->_index));
+                nodeA = nodeA->_ancestors[it], nodeB = nodeB->_ancestors[it];
+                it = std::min((int)nodeB->_ancestors.size(), it);
+            }
         }
     }
     if (nodeA != nodeB) return nodeA->_ancestors[0]->getLevel();

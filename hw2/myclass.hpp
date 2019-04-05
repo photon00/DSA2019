@@ -3,6 +3,7 @@
 #include <cmath>
 #include <vector>
 #include <deque>
+#include <tuple>
 #include <algorithm>
 
 #define OFFSET 0x61
@@ -20,6 +21,7 @@ public:
     void show();
     void showAncestors();
 
+    int                 _index;
     std::vector<Node*>  _children;
     std::vector<Node*>  _children_stack;
     std::vector<Node*>  _ancestors;
@@ -43,5 +45,7 @@ public:
 
 private:
     void dfs(Node* n);
-    std::vector<Node*>  _indexes;
+    std::vector<Node*>              _indexes;
+    int                             _num_node;
+    std::vector< std::vector<int> > _DParray;
 };

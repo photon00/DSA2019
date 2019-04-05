@@ -53,14 +53,14 @@ Node::Node(){
     _c = 'R';
     _level = 0;
     _children.assign(26, NULL);
-    _children_stack.reserve(16);
+    _children_stack.reserve(8);
 }
 
 Node::Node(char c, Node* p){
     _c = c;
     _level = p->getLevel()+1;
     _children.assign(26, NULL);
-    _children_stack.reserve(16);
+    _children_stack.reserve(8);
     _ancestors.assign((int)ceil(log2(_level)) + 1, NULL);
     p->_children[(unsigned int)c-OFFSET] = this;
     p->_children_stack.push_back(this);
