@@ -9,14 +9,13 @@
 
 typedef struct{
 	int   				level;
-	char  				c;
 	std::vector<int>	children;
 } Node;
 
 std::vector<int>  num_idx;  // mapping from string index to node index
 std::vector<Node> nodes;
-std::vector<int>  childrens[1<<18];
-int ancestors[1<<18][20];  // build Jump Pointer Algorithm 2^i ancestors
+std::vector<int>  childrens[200001];
+int ancestors[200001][20];  // build Jump Pointer Algorithm 2^i ancestors
 
 int n, N;
 
@@ -27,13 +26,14 @@ void insert(int parent_num, char c){
 	}
 	else {
 		std::vector<int> children;
-		Node new_node = {nodes[parent_idx].level+1, c, children};
+		Node new_node = {nodes[parent_idx].level+1, children};
 		new_node.children.assign(26, 0);
 
 		nodes.push_back(new_node);
 		num_idx.push_back(nodes.size()-1);
 		nodes[parent_idx].children[c-OFFSET] = nodes.size()-1;
 		childrens[parent_idx].push_back(nodes.size()-1);
+		ancestors[nodes.size()-1][0] = parent_idx;
 	}
 }
 
@@ -42,29 +42,26 @@ void dfs(int x){
 		ancestors[x][i] = ancestors[ancestors[x][i-1]][i-1];
 	}
 	for (int i=0; i<childrens[x].size(); ++i){
-		int child_idx = childrens[x].at(i);
-		ancestors[child_idx][0] = x;
+		int child_idx = childrens[x][i];
 		dfs(child_idx);
 	}
 }
 
 void init(){
 	N = (int)ceil(log2(n));
-	memset(ancestors, 0, sizeof(ancestors));
 	dfs(0);
 }
 
 int lca(int a, int b){
 	if (nodes[a].level > nodes[b].level) std::swap(a, b);
+	
 	int nodeA_level = nodes[a].level;
-	//for (int i=(int)log2(nodes[b].level - nodeA_level)+1; i>=0; --i){
-	for (int i=N; i>=0; --i){
+	for (int i=(int)log2(nodes[b].level - nodeA_level)+1; i>=0; --i){
 		if (nodes[b].level > nodeA_level && nodes[ancestors[b][i]].level >= nodeA_level){
 			b = ancestors[b][i];
 		}
 	}
-	//for (int i=(int)log2(nodes[a].level)+1; i>=0; --i){
-	for (int i=N; i>=0; --i){
+	for (int i=(int)log2(nodes[a].level)+1; i>=0; --i){
 		if (ancestors[a][i] != ancestors[b][i]){
 			a = ancestors[a][i], b = ancestors[b][i];
 		}
@@ -84,7 +81,7 @@ int main(){
 	
 	nodes.reserve(n);
 	vector<int> children;
-	Node root = {0, 'R', children};
+	Node root = {0, children};
 	root.children.assign(26, 0);
 	nodes.push_back(root);
 	
@@ -104,10 +101,6 @@ int main(){
 	}
 	return 0;
 }
-
-
-
-
 
 
 
