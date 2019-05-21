@@ -1,5 +1,6 @@
 *.txt
 *~
-*in*
+in*
+*.in
 *out*
 *gdb*
